@@ -1,0 +1,49 @@
+# Data files — ignore content but keep directory structure via .gitkeep
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# dbt artifacts
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# dbt credentials — never commit
+profiles.yml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment variables — only ignore .env, not .env.example
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Census API key — store in .env, never commit
+census_api_key.txt

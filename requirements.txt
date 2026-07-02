@@ -1,0 +1,24 @@
+# Data sourcing & processing
+requests==2.31.0
+pandas==2.2.2
+numpy==1.26.4
+census==0.8.22          # Census API wrapper
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.30
+
+# dbt
+dbt-core==1.8.3
+dbt-postgres==1.8.2
+
+# Jupyter / notebooks
+jupyterlab==4.2.2
+ipykernel==6.29.4
+
+# Data validation
+great-expectations==0.18.19
+
+# Utilities
+python-dotenv==1.0.1
+tqdm==4.66.4
