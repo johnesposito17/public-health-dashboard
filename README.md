@@ -2,7 +2,6 @@
 
 An end-to-end analytics pipeline transforming CDC PLACES county-level chronic disease data and US Census ACS demographic data into analysis-ready tables, a reusable SQL query library, and dashboard-ready extracts for Tableau.
 
-Built as a portfolio project targeting health analytics roles (CVS Health focus).
 
 ---
 
