@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: dim_county_demographics
+    description: >
+      County-level demographic and socioeconomic dimension table (ACS 2022 5-Year).
+      One row per US county. Primary key is county_fips.
+      Includes NTILE quartile classifications for income, uninsured rate,
+      poverty rate, and population size — pre-computed so downstream SQL
+      and dashboards don't need to re-derive them.
+    columns:
+      - name: county_fips
+        description: 5-digit FIPS county code. Primary key.
+        data_tests:
+          - not_null
+          - unique
+      - name: total_population
+        description: Total county population (ACS B01003_001E).
+        data_tests:
+          - not_null
+      - name: median_household_income
+        description: Median household income in past 12 months (B19013_001E). Null for suppressed counties.
+      - name: pct_uninsured
+        description: Percent of civilian noninstitutionalized population with no health insurance (DP03_0099PE).
+        data_tests:
+          - not_null
+      - name: income_quartile
+        description: Income quartile (1=lowest, 4=highest). Computed with NTILE(4) across all counties.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]
+      - name: uninsured_quartile
+        description: Uninsured rate quartile (1=lowest uninsured, 4=highest).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]
+      - name: poverty_quartile
+        description: Poverty rate quartile (1=lowest poverty, 4=highest).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]
+      - name: population_size_category
+        description: Human-readable population tier label for dashboard filters.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Rural (<25k)', 'Small (25k–100k)', 'Mid-size (100k–500k)', 'Large (500k–1M)', 'Metro (1M+)']
+
+  - name: fct_county_health_metrics
+    description: >
+      Fact table of county × health measure chronic disease prevalence estimates,
+      enriched with demographic context and ranking fields.
+      Grain: one row per county × measure (~125,000 rows).
+      national_pct_rank and state_pct_rank are PERCENT_RANK values (0–100)
+      within each measure, indicating where a county sits relative to peers.
+    columns:
+      - name: county_fips
+        description: 5-digit FIPS county code. Foreign key to dim_county_demographics.
+        data_tests:
+          - not_null
+      - name: measure_id
+        description: Health measure code (e.g. DIABETES, OBESITY). Foreign key to measure metadata.
+        data_tests:
+          - not_null
+      - name: prevalence_pct
+        description: Crude prevalence estimate (0–100%).
+      - name: national_pct_rank
+        description: >
+          Percentile rank of this county within its measure, across all US counties (0–100).
+          0 = lowest prevalence nationally, 100 = highest.
+        data_tests:
+          - not_null
+      - name: state_pct_rank
+        description: Percentile rank within the county's state for the given measure (0–100).
+        data_tests:
+          - not_null
+      - name: income_quartile
+        description: County income quartile from dim_county_demographics (1=lowest, 4=highest).
+      - name: has_acs_data
+        description: True if this county matched an ACS record; false for territories without ACS coverage.
+        data_tests:
+          - not_null
