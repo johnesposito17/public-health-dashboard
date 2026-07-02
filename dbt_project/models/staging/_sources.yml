@@ -1,0 +1,45 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw tables loaded from CDC PLACES and US Census ACS by the Python
+      ingestion scripts in /scripts. These are never modified by dbt —
+      staging models read from here and write to the staging schema.
+    schema: raw
+    tables:
+      - name: cdc_places_county
+        description: >
+          CDC PLACES Local Data for Better Health, County Data 2025 release.
+          One row per county × measure × year (crude prevalence only).
+          Source: https://data.cdc.gov/resource/swc5-untb
+        columns:
+          - name: locationid
+            description: 5-digit FIPS county code (text, zero-padded).
+          - name: measureid
+            description: Short code identifying the health measure (e.g. DIABETES, OBESITY).
+          - name: year
+            description: Survey data year (2022 or 2023 in the 2025 release).
+          - name: data_value
+            description: Crude prevalence estimate as a percentage (0–100).
+          - name: datavaluetypeid
+            description: Always 'CrdPrv' in our pull (crude prevalence).
+
+      - name: acs_county_2022
+        description: >
+          US Census ACS 5-Year Estimates (2022) at the county level.
+          One row per county. Demographic variables pulled from B-tables
+          and DP03 data profile. Derived pct_* columns computed in the
+          ingestion script from raw counts.
+          Source: https://api.census.gov/data/2022/acs/acs5
+        columns:
+          - name: fips
+            description: 5-digit FIPS county code (text, zero-padded).
+          - name: NAME
+            description: Full county name (e.g. "Autauga County, Alabama").
+          - name: median_household_income
+            description: Median household income in past 12 months (B19013_001E).
+          - name: pct_uninsured
+            description: >
+              Percent of civilian noninstitutionalized population with no
+              health insurance coverage (DP03_0099PE).

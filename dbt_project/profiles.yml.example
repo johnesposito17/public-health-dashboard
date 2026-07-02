@@ -1,0 +1,18 @@
+# Copy this file to ~/.dbt/profiles.yml and fill in your credentials.
+# Never commit the real profiles.yml — it contains your database password.
+#
+# dbt looks for profiles.yml in ~/.dbt/ by default.
+# Run `dbt debug` from the dbt_project/ directory to verify the connection.
+
+public_health_dashboard:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: YOUR_PG_USER
+      password: YOUR_PG_PASSWORD
+      dbname: health_dashboard
+      schema: staging       # dbt writes staging models here
+      threads: 4

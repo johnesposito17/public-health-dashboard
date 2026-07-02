@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: stg_cdc_places
+    description: >
+      Cleaned CDC PLACES county-level chronic disease prevalence estimates.
+      One row per county × health measure (most recent year where multiple
+      years exist). Covers 40 measures across ~3,140 US counties.
+    columns:
+      - name: county_fips
+        description: 5-digit FIPS county code (text, zero-padded).
+        data_tests:
+          - not_null
+      - name: measure_id
+        description: Short measure code (e.g. DIABETES, OBESITY, BPHIGH).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [
+                'ACCESS2', 'ARTHRITIS', 'BINGE', 'BPHIGH', 'BPMED',
+                'CANCER', 'CASTHMA', 'CHD', 'CHECKUP', 'CHOLSCREEN',
+                'COGNITION', 'COLON_SCREEN', 'COPD', 'CSMOKING', 'DENTAL',
+                'DEPRESSION', 'DIABETES', 'DISABILITY', 'EMOTIONSPT',
+                'FOODINSECU', 'FOODSTAMP', 'GHLTH', 'HEARING', 'HIGHCHOL',
+                'HOUSINSECU', 'INDEPLIVE', 'LACKTRPT', 'LONELINESS', 'LPA',
+                'MAMMOUSE', 'MHLTH', 'MOBILITY', 'OBESITY', 'PHLTH',
+                'SELFCARE', 'SHUTUTILITY', 'SLEEP', 'STROKE', 'TEETHLOST',
+                'VISION'
+              ]
+      - name: prevalence_pct
+        description: Crude prevalence estimate as a percentage (0–100).
+        data_tests:
+          - not_null:
+              config:
+                where: "prevalence_pct is not null"
+      - name: state_abbr
+        description: Two-letter state abbreviation.
+        data_tests:
+          - not_null
+      - name: data_year
+        description: Survey year (2022 or 2023).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [2022, 2023]
+      - name: value_type_id
+        description: Always CrdPrv (crude prevalence) in this model.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['CrdPrv']
+
+  - name: stg_acs_demographics
+    description: >
+      Cleaned ACS 5-Year (2022) county-level demographic and socioeconomic
+      estimates. One row per county. Source variables from Census B-tables
+      (counts) and DP03 profile (% uninsured).
+    columns:
+      - name: county_fips
+        description: 5-digit FIPS county code (text, zero-padded).
+        data_tests:
+          - not_null
+          - unique
+      - name: total_population
+        description: Total county population (B01003_001E).
+        data_tests:
+          - not_null
+      - name: median_household_income
+        description: Median household income in past 12 months (B19013_001E). Null for suppressed counties.
+      - name: pct_uninsured
+        description: >
+          Percent of civilian noninstitutionalized population with no health
+          insurance (DP03_0099PE). Ranges 0–100.
+        data_tests:
+          - not_null
+      - name: pct_65_plus
+        description: Percent of total population aged 65 or older. Derived from B01001 age-sex buckets.
+        data_tests:
+          - not_null
+      - name: pct_below_poverty
+        description: Percent of population below the federal poverty level (B17001).
+        data_tests:
+          - not_null
+      - name: acs_year
+        description: ACS estimate year (always 2022 in this model).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [2022]
