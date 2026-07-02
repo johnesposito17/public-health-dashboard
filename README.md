@@ -70,31 +70,35 @@ Copy the example and fill in your values:
 
 ```bash
 cp .env.example .env
-# Edit .env with your Postgres connection string and Census API key
+# Edit .env — set CENSUS_API_KEY and Postgres credentials
 ```
 
-### 3. Start Postgres (Docker option)
+`.env` is gitignored. See `.env.example` for all required variables.
+
+### 3. Start Postgres (Docker)
 
 ```bash
-docker run --name ph-dashboard \
-  -e POSTGRES_USER=ph_user \
-  -e POSTGRES_PASSWORD=ph_pass \
-  -e POSTGRES_DB=public_health \
+docker run --name ds-health-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=health_dashboard \
   -p 5432:5432 \
-  -d postgres:15
+  -d postgres:16
 ```
+
+Connection string: `postgresql://postgres:postgres@localhost:5432/health_dashboard`
 
 ### 4. Pull raw data
 
 ```bash
-python scripts/pull_cdc_places.py
-python scripts/pull_acs_data.py
+python3 scripts/pull_cdc_places.py   # no API key needed
+python3 scripts/pull_acs_data.py     # requires CENSUS_API_KEY in .env
 ```
 
 ### 5. Load into Postgres and run dbt
 
 ```bash
-python scripts/load_to_postgres.py
+python3 scripts/load_to_postgres.py  # loads raw schema; skips ACS if file absent
 cd dbt_project
 dbt deps
 dbt run
