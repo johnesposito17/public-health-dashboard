@@ -67,10 +67,11 @@ B_VARS: dict[str, str] = {
     "B17001_002E": "pop_below_poverty",
 }
 
-# ── Subject-table variables (S tables) ──────────────────────────────────────
-S_VARS: dict[str, str] = {
-    # S2701: Selected Characteristics of Health Insurance Coverage
-    "S2701_C04_001E": "pct_uninsured",
+# ── Data Profile variables (DP tables) ──────────────────────────────────────
+# S2701_C04_001E is the raw COUNT of uninsured people, not a percentage.
+# DP03_0099PE is the pre-computed "% no health insurance coverage" — use that.
+DP_VARS: dict[str, str] = {
+    "DP03_0099PE": "pct_uninsured",
 }
 
 CENSUS_NULL_SENTINEL = -999_999_000  # Census uses large negative ints for suppressed/missing
@@ -109,24 +110,24 @@ def main() -> None:
     print(f"  {len(df_b):,} county rows")
 
     # ── Pull 2: subject table S2701 (uninsured rate) ─────────────────────────
-    print(f"Pulling ACS {ACS_YEAR} 5-Year subject table S2701 (uninsured)...")
-    df_s = fetch_census(f"{BASE_ACS}/subject", list(S_VARS.keys()))
-    print(f"  {len(df_s):,} county rows")
+    print(f"Pulling ACS {ACS_YEAR} 5-Year data profile DP03 (% uninsured)...")
+    df_dp = fetch_census(f"{BASE_ACS}/profile", list(DP_VARS.keys()))
+    print(f"  {len(df_dp):,} county rows")
 
     # ── Build 5-digit FIPS before merging ────────────────────────────────────
     # Census returns 'state' (2-digit) and 'county' (3-digit) separately.
     # We zero-pad and concatenate to match the 5-digit locationid in PLACES data.
-    for df in (df_b, df_s):
+    for df in (df_b, df_dp):
         df["fips"] = df["state"].str.zfill(2) + df["county"].str.zfill(3)
 
     df = df_b.merge(
-        df_s[["fips", "S2701_C04_001E"]],
+        df_dp[["fips", "DP03_0099PE"]],
         on="fips",
         how="left",
     )
 
     # ── Rename to human-readable columns ─────────────────────────────────────
-    rename_map = {**B_VARS, **S_VARS}
+    rename_map = {**B_VARS, **DP_VARS}
     df = df.rename(columns=rename_map)
 
     # ── Coerce all numeric columns and mask Census null sentinels ─────────────
